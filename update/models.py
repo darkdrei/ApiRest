@@ -1,8 +1,12 @@
+from django.core.serializers import serialize
 from django.db import models
 from django.conf import settings
-from django.core.serializers import serialize
+
 import json
 # Create your models here.
+from django.http import JsonResponse
+from django.views import View
+
 
 def upload_update_image(instance, filename):
     return "updates/{user}/{filename}".format(user=instance.user, filename=filename)
@@ -13,11 +17,12 @@ class UpdateQuerySet(models.QuerySet):
         print("LLego")
         return serialize('json', qs, fields=('user', 'content', 'image'))
 
-    def serialize(self):
+    def serialize(self, text=None):
+        print(' Query jajaja Esto es', text)
         qs = self
         array = []
         for obj in qs:
-            struct = json.loads(obj.serialize())
+            struct = json.loads(obj.serialize(text))
             array.append(struct)
         return json.dumps(array)
 
@@ -38,7 +43,7 @@ class Update(models.Model):
     def __str__(self):
         return self.content or ""
 
-    def serialize(self):
+    def serialize(self, fields=()):
         data = (serialize("json", [self], fields=('user', 'content', 'image')))
         struct = json.loads(data)
         print(struct)
